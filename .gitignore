@@ -1,0 +1,36 @@
+# --- Visual Studio Specific ---
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+# --- Build Artifacts (Foldere de output și temporare) ---
+Debug/
+Release/
+x64/
+x86/
+bin/
+obj/
+*.exe
+*.dll
+*.lib
+*.pdb
+*.ilk
+*.exp
+*.obj
+*.o
+*.pch
+*.ipch
+
+# --- IntelliSense și Baze de date ---
+*.db
+*.opensdf
+*.sdf
+*.aps
+
+# --- Diverse / Temp ---
+*.log
+*.tmp
+*.cache
