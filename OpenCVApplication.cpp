@@ -2164,10 +2164,7 @@ Mat compute_kernel_2D(int kernel_size)
     return kernel;
 }
 
-/* Mat apply_gaussian_filtering_2D(const Mat& src, int kernel_size)
-{
 
-} */
 
 Mat apply_gaussian_blur_color(const Mat& src)
 {
@@ -2431,7 +2428,13 @@ void test_traffic_light_segmentation()
 }
 
 
-// primul pas - conversia BGR IN HSI
+
+
+
+
+
+
+// first step - BGR -> HSI conversion
 void convert_BGR_to_HSI(const Mat& src, Mat& Hue, Mat& Saturation, Mat& Intensity)
 {
 	int height = src.rows;
@@ -2460,11 +2463,11 @@ void convert_BGR_to_HSI(const Mat& src, Mat& Hue, Mat& Saturation, Mat& Intensit
 
 			// Hue (H)
 			float H = 0.0f;
-			float num = 0.5f * ((r - g) + (r - b));
+			float numerator = 0.5f * ((r - g) + (r - b));
 			float denominator = sqrt((r - g) * (r - g) + (r - b) * (g - b));
 
 			if (denominator != 0.0f) {
-				float theta = acos(num / denominator);
+				float theta = acos(numerator / denominator);
 				H = theta * 180.0f / CV_PI;    
 
 				if (b > g) {
@@ -2479,72 +2482,71 @@ void convert_BGR_to_HSI(const Mat& src, Mat& Hue, Mat& Saturation, Mat& Intensit
 	}
 }
 
+// helper function for resize
+void resize_for_display(Mat& src, int max_dim = 800)
+{
+	if (src.cols > max_dim || src.rows > max_dim) {
+		float scale_w = (float)max_dim / src.cols;
+		float scale_h = (float)max_dim / src.rows;
+
+		float scale = min(scale_w, scale_h);
+
+		cv::resize(src, src, Size(), scale, scale);
+	}
+}
+
+// test BGR -> HSI conversion
 void test_HSI_conversion()
 {
 	char fname[MAX_PATH];
 	while (openFileDlg(fname))
 	{
 		Mat src = imread(fname, IMREAD_COLOR);
-		if (src.empty()) continue;
-
-		// 1. Redimensionare pentru consistenta la testare
-		if (src.cols > 800) {
-			float scale = 800.0f / src.cols;
-			// resize-ul este permis de obicei pentru partea de interfata/scalare
-			cv::resize(src, src, Size(), scale, scale);
+		if (src.empty()) {
+			continue;
 		}
+
+		resize_for_display(src);
 
 		int height = src.rows;
 		int width = src.cols;
 
-		// 2. Declarăm matricile float pentru datele brute
 		Mat H, S, I;
 		convert_BGR_to_HSI(src, H, S, I);
 
-		// 3. Declarăm matricile uchar [0-255] strict pentru afișare vizuală
 		Mat H_display = Mat::zeros(height, width, CV_8UC1);
 		Mat S_display = Mat::zeros(height, width, CV_8UC1);
 		Mat I_display = Mat::zeros(height, width, CV_8UC1);
 
-		// 4. Parcurgere manuală pixel cu pixel pentru scalare (fără convertTo)
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-
-				// Hue este în [0.0, 360.0]. Îl aducem în [0, 255] prin regula de trei simplă
 				float h_val = H.at<float>(i, j);
 				H_display.at<uchar>(i, j) = (uchar)((h_val * 255.0f) / 360.0f);
 
-				// Saturation este în [0.0, 1.0]. Îl aducem în [0, 255] înmulțind cu 255
 				float s_val = S.at<float>(i, j);
 				S_display.at<uchar>(i, j) = (uchar)(s_val * 255.0f);
 
-				// Intensity este deja în [0.0, 255.0], necesită doar conversie de tip la uchar
 				float i_val = I.at<float>(i, j);
 				I_display.at<uchar>(i, j) = (uchar)(i_val);
 			}
 		}
 
-		// 5. Afișăm rezultatele
-		imshow("Imagine Originala (BGR)", src);
-		imshow("1. Hue (H) - Nuante (Scalat)", H_display);
-		imshow("2. Saturation (S) (Scalat)", S_display);
-		imshow("3. Intensity (I)", I_display);
-
-		printf("Conversie si scalare manuala incheiata. Apasa o tasta...\n");
+		imshow("Original Image", src);
+		imshow("Hue (H)", H_display);
+		imshow("Saturation (S)", S_display);
+		imshow("Intensity (I)", I_display);
 
 		waitKey(0);
 		destroyAllWindows();
 	}
 }
 
-
-// pasul 2 - crearea hartii binare (foreground-background) pe baza pragurilor HSI
+// second step - creating the binary foreground map, using HSI thresholds
 void compute_foreground_map(const Mat& H, const Mat& S, const Mat& I, Mat& b_map)
 {
 	int height = H.rows;
 	int width = H.cols;
 
-	// Initializam harta binara (background = 0)
 	b_map = Mat::zeros(height, width, CV_8UC1);
 
 	for (int i = 0; i < height; i++) {
@@ -2553,24 +2555,21 @@ void compute_foreground_map(const Mat& H, const Mat& S, const Mat& I, Mat& b_map
 			float saturation = S.at<float>(i, j);
 			float intensity = I.at<float>(i, j);
 
-			// Verificam conditiile pentru Rosu, Galben si Verde (Ecuatia 1)
-			bool isRed = ((hue >= 0.0f && hue <= 40.0f) || (hue >= 330.0f && hue <= 360.0f)) &&
+			// red detection
+			bool isRed = ((hue >= 0.0f && hue <= 20.0f) || (hue >= 340.0f && hue <= 360.0f)) &&
 				(saturation >= 0.13f && saturation <= 1.0f) &&
 				(intensity >= 80.0f && intensity <= 255.0f);
 
-			bool isYellow = (hue >= 20.0f && hue <= 60.0f) &&
+			// yellow detection
+			bool isYellow = (hue >= 25.0f && hue <= 60.0f) &&
 				(saturation >= 0.15f && saturation <= 1.0f) &&
-				(intensity >= 150.0f && intensity <= 255.0f);
+				(intensity >= 120.0f && intensity <= 255.0f);
 
-			/* bool isGreen = (hue >= 150.0f && hue <= 180.0f) &&
-				(saturation >= 0.60f && saturation <= 1.0f) && (intensity >= 100.0f && intensity <= 255.0f); */
-
+			// green detection
 			bool isGreen = (hue >= 120.0f && hue <= 180.0f) &&
-				(saturation >= 0.12f && saturation <= 1.0f) && // Am scazut putin pentru a prinde albul LED-ului
+				(saturation >= 0.12f && saturation <= 1.0f) &&
 				(intensity >= 110.0f && intensity <= 255.0f);
 
-			// Daca pixelul respecta ORICARE dintre cele 3 reguli, devine "foreground point with value of one"
-			// (Folosim 255 pentru a putea afisa masca vizual in OpenCV)
 			if (isRed || isYellow || isGreen) {
 				b_map.at<uchar>(i, j) = 255;
 			}
@@ -2578,113 +2577,136 @@ void compute_foreground_map(const Mat& H, const Mat& S, const Mat& I, Mat& b_map
 	}
 }
 
+// test binary foreground map creation
 void test_foreground_map()
 {
 	char fname[MAX_PATH];
 	while (openFileDlg(fname))
 	{
 		Mat src = imread(fname, IMREAD_COLOR);
-		if (src.empty()) continue;
-
-		// Redimensionare strict pentru interfata (sa incapa pe ecran)
-		if (src.cols > 800) {
-			float scale = 800.0f / src.cols;
-			cv::resize(src, src, Size(), scale, scale);
+		if (src.empty()) {
+			continue;
 		}
 
-		// PASUL 1: Conversia in HSI
+		resize_for_display(src);
+
 		Mat H, S, I;
 		convert_BGR_to_HSI(src, H, S, I);
 
-		// PASUL 2: Color Screening (Generarea hartii binare unice)
+		// color screening
 		Mat b_map;
 		compute_foreground_map(H, S, I, b_map);
 
-		// --- TRICK-UL PENTRU VIZUALIZARE (Implementare Manuala) ---
+		// visualization matrix
 		int height = src.rows;
 		int width = src.cols;
-
-		// Alocam memoria pentru imaginea de vizualizare (fara initializare OpenCV)
 		Mat visualization(height, width, CV_8UC3);
 
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-
-				// Daca pixelul este in masca noastra (are valoarea 255)
 				if (b_map.at<uchar>(i, j) == 255) {
-					// Copiem manual canal cu canal culoarea originala
 					visualization.at<Vec3b>(i, j) = src.at<Vec3b>(i, j);
 				}
 				else {
-					// Daca nu, il coloram manual in alb (B=255, G=255, R=255)
-					visualization.at<Vec3b>(i, j) = Vec3b(255, 255, 255);
+					visualization.at<Vec3b>(i, j) = Vec3b(255, 255, 255); // white
 				}
 			}
 		}
 
-		// Afisam rezultatele comparative
-		imshow("Imagine Originala", src);
-		imshow("Harta Binara (b_map bruta)", b_map);
-		imshow("Rezultat Color Screening (Fig 1.b)", visualization);
+		imshow("Original Image", src);
+		imshow("Binary Map", b_map);
+		imshow("Color Screening", visualization);
 
 		waitKey(0);
 		destroyAllWindows();
 	}
 }
 
-// Funcție separată pentru curățarea morfologică, etichetare și filtrarea ariei
-labels process_candidate_regions(const Mat& b_map, Mat& final_candidates_map)
+// third step - apply morphological operations (closing + opening)
+Mat apply_morphological_operations(const Mat& b_map)
 {
-	// 1. Inversam masca pentru framework-ul tau (Obiect = 0, Fundal = 255)
 	Mat inverted_bmap = 255 - b_map;
 
-	// 2. CLOSING BLAND (3 iteratii in loc de 5)
-	// Acest closing este suficient pentru a uni liniile de LED (flicker-ul),
-	// umpland "gaura" din interior, dar fara sa deformeze prea tare conturul.
 	Mat closed_map = closing(inverted_bmap, 1, 8);
 	Mat opened_map = opening(closed_map, 1, 8);
 
-	// OBSERVAȚIE: Am sters complet apelul catre opening()! 
-	// Liniile subtiri nu ar fi supravietuit eroziunii din cadrul acelui opening.
+	return opened_map;
+}
 
-	// 3. Etichetarea componentelor conexe direct pe harta reparata de Closing
-	labels labeled_data = Two_pass_labelling(opened_map);
+// test morphological operations effect
+void test_morphological_operations()
+{
+	char fname[MAX_PATH];
+	while (openFileDlg(fname))
+	{
+		Mat src = imread(fname, IMREAD_COLOR);
+		if (src.empty()) {
+			continue;
+		}
 
-	// 4. Calcularea ariei pentru fiecare obiect etichetat
+		resize_for_display(src);
+
+		Mat H, S, I, b_map;
+		convert_BGR_to_HSI(src, H, S, I);
+		compute_foreground_map(H, S, I, b_map);
+
+		Mat morphed_map = apply_morphological_operations(b_map);
+		Mat display_morphed = 255 - morphed_map;
+
+		imshow("Map before", b_map);
+		imshow("Map after closing + opening", display_morphed);
+
+		waitKey(0);
+		destroyAllWindows();
+	}
+}
+
+// fourth step - label and process candidate regions by area
+labels process_candidate_regions(const Mat& morphed_map, Mat& final_candidates_map)
+{
+	labels labeled_data = Two_pass_labelling(morphed_map);
+	int rows = labeled_data.labels.rows;
+	int cols = labeled_data.labels.cols;
+	Mat labels_matrix = labeled_data.labels;
+
 	std::vector<int> areas(labeled_data.no_labels + 1, 0);
-	for (int i = 0; i < labeled_data.labels.rows; i++) {
-		for (int j = 0; j < labeled_data.labels.cols; j++) {
-			int lbl = labeled_data.labels.at<int>(i, j);
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols; j++) {
+			int lbl = labels_matrix.at<int>(i, j);
 			if (lbl > 0) {
 				areas[lbl]++;
 			}
 		}
 	}
 
-	// 5. Filtrarea obiectelor
-	final_candidates_map = Mat::zeros(b_map.size(), CV_8UC1);
-	Mat filtered_labels_mat = Mat::zeros(b_map.size(), CV_32SC1);
+	final_candidates_map = Mat::zeros(morphed_map.size(), CV_8UC1);
+	Mat filtered_labels_mat = Mat::zeros(morphed_map.size(), CV_32SC1);
 
 	int valid_candidates = 0;
 	std::vector<int> valid_label_map(labeled_data.no_labels + 1, 0);
 
-	// SCADEM PRAGUL LA 50! (De la 165, cat era in lucrare pentru o rezolutie mult mai mica)
+	int MIN_AREA_THRESHOLD = 500;
+
+	// filtering labeled regions by area
 	for (int i = 1; i <= labeled_data.no_labels; i++) {
-		if (areas[i] > 50) {
+		if (areas[i] > MIN_AREA_THRESHOLD) {
 			valid_candidates++;
 			valid_label_map[i] = valid_candidates;
 		}
 	}
 
-	// Construim harta binara curata si harta etichetelor valide
-	for (int i = 0; i < labeled_data.labels.rows; i++) {
-		for (int j = 0; j < labeled_data.labels.cols; j++) {
-			int old_lbl = labeled_data.labels.at<int>(i, j);
+	// final binary map and valid labels matrix
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols; j++) {
+			int old_lbl = labels_matrix.at<int>(i, j);
 
-			// Transferam doar obiectele care au supravietuit filtrului de arie
-			if (old_lbl > 0 && areas[old_lbl] > 50) {
-				final_candidates_map.at<uchar>(i, j) = 255;
-				filtered_labels_mat.at<int>(i, j) = valid_label_map[old_lbl];
+			if (old_lbl > 0) {
+				int new_lbl = valid_label_map[old_lbl];
+
+				if (new_lbl > 0) {
+					final_candidates_map.at<uchar>(i, j) = 255;
+					filtered_labels_mat.at<int>(i, j) = new_lbl;
+				}
 			}
 		}
 	}
@@ -2693,6 +2715,7 @@ labels process_candidate_regions(const Mat& b_map, Mat& final_candidates_map)
 	return result_labels;
 }
 
+// test candidate regions selection
 void test_candidate_regions()
 {
 	char fname[MAX_PATH];
@@ -2703,128 +2726,41 @@ void test_candidate_regions()
 			continue;
 		}
 
-		if (src.cols > 800) {
-			float scale = 800.0f / src.cols;
-			cv::resize(src, src, Size(), scale, scale);
-		}
+		resize_for_display(src);
 
-		// PASUL 1: Conversia in HSI
 		Mat H, S, I;
 		convert_BGR_to_HSI(src, H, S, I);
 
-		// PASUL 2: Color Screening (creare harta binara)
 		Mat b_map;
 		compute_foreground_map(H, S, I, b_map);
 
-		// PASUL 3: Procesarea regiunilor candidat (Morfologie + Labeling + Filtrare)
+		Mat morphed_map = apply_morphological_operations(b_map);
+
 		Mat final_candidates_map;
-		labels valid_labels = process_candidate_regions(b_map, final_candidates_map);
+		labels valid_labels = process_candidate_regions(morphed_map, final_candidates_map);
 
-		printf("Au fost detectate %d regiuni candidat valide (>165 pixeli)!\n", valid_labels.no_labels);
-
-		// Vizualizare bonus: coloram etichetele folosind functia din Lab 5
 		Mat colored_labels = color_labels(valid_labels);
 
-		// Afisam rezultatele
-		imshow("Imagine Originala", src);
-		imshow("Harta Bruta (Dupa Color Screening)", b_map);
-		imshow("Regiuni Candidat Binare (Fig 1.d)", final_candidates_map);
-		imshow("Regiuni Candidat Etichetate", colored_labels);
+		imshow("Original image", src);
+		imshow("Map before processing candidate regions", 255 - morphed_map);
+		imshow("Candidate regions", final_candidates_map);
+		imshow("Labeled candidate regions", colored_labels);
 
 		waitKey(0);
 		destroyAllWindows();
 	}
 }
 
+// struct for a traffic light candidate region
 struct TrafficLightCandidate {
 	int id;
 	Point2d centroid;
 	bool is_circle;
 };
 
-// Functia primeste hartile etichetate si returneaza doar candidatii care sunt cercuri
-/* std::vector<TrafficLightCandidate> filter_by_shape(const labels& valid_labels)
-{
-	std::vector<TrafficLightCandidate> results;
-	int height = valid_labels.labels.rows;
-	int width = valid_labels.labels.cols;
 
-	for (int current_label = 1; current_label <= valid_labels.no_labels; current_label++) {
-
-		std::vector<Point> region_pixels;
-
-		// Vectori pentru a stoca extremele (ignorand astfel gaurile)
-		std::vector<int> min_x(height, width + 1);
-		std::vector<int> max_x(height, -1);
-		std::vector<int> min_y(width, height + 1);
-		std::vector<int> max_y(width, -1);
-
-		// 1. Gasim extremele pentru a forma cochilia exterioara
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
-				if (valid_labels.labels.at<int>(i, j) == current_label) {
-					region_pixels.push_back(Point(j, i));
-
-					// Actualizam extremele pe orizontala
-					if (j < min_x[i]) min_x[i] = j;
-					if (j > max_x[i]) max_x[i] = j;
-
-					// Actualizam extremele pe verticala
-					if (i < min_y[j]) min_y[j] = i;
-					if (i > max_y[j]) max_y[j] = i;
-				}
-			}
-		}
-
-		if (region_pixels.empty()) continue;
-
-		// 2. Calculul Centroidului folosind toata aria (mai stabil decat doar conturul)
-		double sum_x = 0, sum_y = 0;
-		for (Point p : region_pixels) {
-			sum_x += p.x;
-			sum_y += p.y;
-		}
-		double X_i = sum_x / region_pixels.size();
-		double Y_i = sum_y / region_pixels.size();
-
-		// 3. Reconstructia DOAR a conturului exterior
-		std::vector<Point> outer_border;
-		for (int i = 0; i < height; i++) {
-			if (max_x[i] != -1) {
-				outer_border.push_back(Point(min_x[i], i));
-				outer_border.push_back(Point(max_x[i], i));
-			}
-		}
-		for (int j = 0; j < width; j++) {
-			if (max_y[j] != -1) {
-				outer_border.push_back(Point(j, min_y[j]));
-				outer_border.push_back(Point(j, max_y[j]));
-			}
-		}
-
-		// 4. Calculul razei reale (cu radical) doar pe cochilia exterioara
-		double r_max = -1.0;
-		double r_min = 99999999.0;
-
-		for (Point p : outer_border) {
-			double r = std::sqrt((p.x - X_i) * (p.x - X_i) + (p.y - Y_i) * (p.y - Y_i));
-			if (r > r_max) r_max = r;
-			if (r < r_min) r_min = r;
-		}
-
-		// 5. Decizia Geometrica (Toleranta de 35% pentru abaterea de la cercul perfect)
-		double shape_variance_ratio = (r_max - r_min) / r_max;
-
-		// Conditie bonus: raza trebuie sa fie macar 5 pixeli (eliminam zgomotul microscopic)
-		bool is_circle = (shape_variance_ratio <= 0.35) && (r_max > 5.0);
-
-		results.push_back({ current_label, Point2d(X_i, Y_i), is_circle });
-	}
-
-	return results;
-} */
-
-Mat get_mask_by_label(const Mat& label_mat, int label_id) {
+// helper function for getting object mask based on its label
+Mat get_obj_by_label(const Mat& label_mat, int label_id) {
 	Mat mask = Mat::zeros(label_mat.size(), CV_8UC1);
 	for (int i = 0; i < label_mat.rows; i++) {
 		for (int j = 0; j < label_mat.cols; j++) {
@@ -2836,6 +2772,7 @@ Mat get_mask_by_label(const Mat& label_mat, int label_id) {
 	return mask;
 }
 
+// fifth step - filtering candidate regions based on their shape (circle + ellipse)
 std::vector<TrafficLightCandidate> filter_by_shape(const labels& valid_labels)
 {
 	std::vector<TrafficLightCandidate> results;
@@ -2843,28 +2780,22 @@ std::vector<TrafficLightCandidate> filter_by_shape(const labels& valid_labels)
 	int width = valid_labels.labels.cols;
 
 	for (int current_label = 1; current_label <= valid_labels.no_labels; current_label++) {
+		Mat obj = get_obj_by_label(valid_labels.labels, current_label);
 
-		// 1. Extragem masca obiectului folosind functia noua (compatibila cu labels)
-		Mat obj = get_mask_by_label(valid_labels.labels, current_label);
-
-		int area = compute_area(obj);
-		bool is_large_enough = (area > 500); // Prag minim de 200 pixeli
-
-		// 2. Calculam Bounding Box si Aspect Ratio
+		// computing bounding box and aspect ratio
 		rectangle_coord bb = compute_bounding_box(obj);
 		double aspect_ratio = compute_aspect_ratio(bb);
 
-		// Verificam compactitatea (semaforul trebuie sa fie aproape patrat, nu alungit)
+		// check object's compactness
 		bool is_compact = (aspect_ratio > 0.5 && aspect_ratio < 1.8);
 
-		// 3. Calculul cochiliei exterioare pentru a ignora "gaurile" din interior
 		std::vector<Point> region_pixels;
 		std::vector<int> min_x(height, width + 1);
 		std::vector<int> max_x(height, -1);
 		std::vector<int> min_y(width, height + 1);
 		std::vector<int> max_y(width, -1);
 
-		// Parcurgem masca pentru a gasi extremele (cochilia)
+		// computing object's outer boundary
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				if (obj.at<uchar>(i, j) == 255) {
@@ -2877,9 +2808,11 @@ std::vector<TrafficLightCandidate> filter_by_shape(const labels& valid_labels)
 			}
 		}
 
-		if (region_pixels.empty()) continue;
+		if (region_pixels.empty()) {
+			continue;
+		}
 
-		// 4. Calculul Centroidului pe baza intregii arii
+		// computing centroid
 		double sum_x = 0, sum_y = 0;
 		for (Point p : region_pixels) {
 			sum_x += p.x;
@@ -2888,7 +2821,7 @@ std::vector<TrafficLightCandidate> filter_by_shape(const labels& valid_labels)
 		double X_i = sum_x / region_pixels.size();
 		double Y_i = sum_y / region_pixels.size();
 
-		// 5. Constructia "cochiliei" exterioare (fara interior)
+		// outer border points
 		std::vector<Point> outer_border;
 		for (int i = 0; i < height; i++) {
 			if (max_x[i] != -1) {
@@ -2903,21 +2836,25 @@ std::vector<TrafficLightCandidate> filter_by_shape(const labels& valid_labels)
 			}
 		}
 
-		// 6. Calculul razei pe baza cochiliei
+		// computing radii
 		double r_max = -1.0;
 		double r_min = 99999999.0;
 
 		for (Point p : outer_border) {
 			double r = std::sqrt((p.x - X_i) * (p.x - X_i) + (p.y - Y_i) * (p.y - Y_i));
-			if (r > r_max) r_max = r;
-			if (r < r_min) r_min = r;
+			if (r > r_max) {
+				r_max = r;
+			}
+			if (r < r_min) {
+				r_min = r;
+			}
 		}
 
-		// 7. Decizia Geometrica Finala
+		// final decision (based on the geometry of the object)
 		double shape_variance_ratio = (r_max - r_min) / r_max;
-		bool is_circle = (shape_variance_ratio <= 0.45); // Prag de 45% toleranta
+		bool is_circle = (shape_variance_ratio <= 0.45); // 45% tolerance threshold
 
-		bool is_valid = is_circle && is_compact && (r_max > 5.0) && is_large_enough;
+		bool is_valid = is_circle && is_compact && (r_max > 5.0);
 
 		results.push_back({ current_label, Point2d(X_i, Y_i), is_valid });
 	}
@@ -2925,63 +2862,189 @@ std::vector<TrafficLightCandidate> filter_by_shape(const labels& valid_labels)
 	return results;
 }
 
-void test_traffic_light_final_system()
+// test traffic light detection by shape
+void test_traffic_light_shape_detection()
 {
 	char fname[MAX_PATH];
 	while (openFileDlg(fname))
 	{
 		Mat src = imread(fname, IMREAD_COLOR);
-		if (src.empty()) continue;
-
-		if (src.cols > 800) {
-			float scale = 800.0f / src.cols;
-			cv::resize(src, src, Size(), scale, scale);
+		if (src.empty()) {
+			continue;
 		}
+
+		resize_for_display(src);
 
 		Mat output_display = src.clone();
 
-		// PASUL 1: BGR -> HSI
 		Mat H, S, I;
 		convert_BGR_to_HSI(src, H, S, I);
 
-		// PASUL 2: Color Screening (Harta binară unică)
 		Mat b_map;
 		compute_foreground_map(H, S, I, b_map);
 
-		// PASUL 3: Morfologie & Region Labeling
+		Mat morphed_map = apply_morphological_operations(b_map);
+
 		Mat final_candidates_map;
-		labels valid_labels = process_candidate_regions(b_map, final_candidates_map);
+		labels valid_labels = process_candidate_regions(morphed_map, final_candidates_map);
 		Mat colored_labels = color_labels(valid_labels);
 
-		// PASUL 4: Verificarea formei (Circularity Check cu TH_r = 50.0)
 		std::vector<TrafficLightCandidate> final_results = filter_by_shape(valid_labels);
 
-		// PASUL 5: Afisarea rezultatelor finale (Desenam doar cercurile validate)
-		int confirmed_lights = 0;
+		int detected_shapes = 0;
 		for (const auto& candidate : final_results) {
 			if (candidate.is_circle) {
-				confirmed_lights++;
+				detected_shapes++;
 
-				// Desenam o tinta/cruce pe centroid
 				Point center((int)candidate.centroid.x, (int)candidate.centroid.y);
 				drawMarker(output_display, center, Scalar(255, 0, 255), MARKER_CROSS, 15, 2);
-
-				// Desenam un cerc bounding box pentru estetica
 				circle(output_display, center, 20, Scalar(0, 255, 0), 2);
 			}
 		}
 
-		printf("Sistemul a validat matematic %d culori.\n", confirmed_lights);
-
 		imshow("Colored labels", colored_labels);
-		imshow("Rezultat Final - Sistem Detectie", output_display);
+		imshow("Shape detection", output_display);
 
 		waitKey(0);
 		destroyAllWindows();
 	}
 }
 
-// !!!!! SCRIE FUNCTIA DE IDENTIFICARE CULOARE, APOI CURATA CODUL, ULTERIOR FA ALGORITMUL PENTRU RECUNOASTERE SAGEATA INTERMITENT LA SEMAFOR
+// helper function to get color's name
+std::string get_color_name(int color_code) {
+	if (color_code == 1) {
+		return "RED";
+	}
+
+	if (color_code == 2) {
+		return "YELLOW";
+	}
+
+	if (color_code == 3) {
+		return "GREEN";
+	}
+	return "";
+}
+
+// sixth step - classify region's color
+int classify_candidate(Mat obj_mask, Mat H, Mat S, Mat I)
+{
+	int red_count = 0, yellow_count = 0, green_count = 0, total_pixels = 0;
+
+	for (int i = 0; i < obj_mask.rows; i++) {
+		for (int j = 0; j < obj_mask.cols; j++) {
+			if (obj_mask.at<uchar>(i, j) == 255) {
+				total_pixels++;
+				float hue = H.at<float>(i, j);
+				float sat = S.at<float>(i, j);
+				float inten = I.at<float>(i, j);
+
+				// new color thresholds for classifying, avoiding overlapping
+				if (((hue >= 0.0f && hue <= 20.0f) || (hue >= 340.0f && hue <= 360.0f)) &&
+					(sat >= 0.13f) && (inten >= 80.0f)) {
+					red_count++;
+				}
+				else if ((hue >= 25.0f && hue <= 60.0f) &&
+					(sat >= 0.15f) && (inten >= 120.0f)) {
+					yellow_count++;
+				}
+				else if ((hue >= 100.0f && hue <= 190.0f) &&
+					(sat >= 0.05f) && (inten >= 100.0f)) {
+					green_count++;
+				}
+			}
+		}
+	}
+
+	if (total_pixels == 0) {
+		return 0;
+	}
+
+	// compute color density percentages
+	float p_red = (float)red_count / total_pixels;
+	float p_yellow = (float)yellow_count / total_pixels;
+	float p_green = (float)green_count / total_pixels;
+
+	// TH_c = 0.5 (the dominant color must cover more than 50% of the candidate region)
+	if (p_red > 0.5f) {
+		return 1;
+	}
+	if (p_yellow > 0.5f) {
+		return 2;
+	}
+	if (p_green > 0.5f) {
+		return 3;
+	}
+
+	return 0; // unknown color
+}
+
+// test color classification
+void test_traffic_light_final_detection()
+{
+	char fname[MAX_PATH];
+	while (openFileDlg(fname))
+	{
+		Mat src = imread(fname, IMREAD_COLOR);
+		if (src.empty()) {
+			continue;
+		}
+
+		resize_for_display(src);
+
+		Mat output_display = src.clone();
+
+		Mat H, S, I;
+		convert_BGR_to_HSI(src, H, S, I);
+
+		Mat b_map;
+		compute_foreground_map(H, S, I, b_map);
+
+		Mat morphed_map = apply_morphological_operations(b_map);
+
+		Mat final_candidates_map;
+		labels valid_labels = process_candidate_regions(morphed_map, final_candidates_map);
+		Mat colored_labels = color_labels(valid_labels);
+
+		std::vector<TrafficLightCandidate> final_results = filter_by_shape(valid_labels);
+
+		int confirmed_lights = 0;
+		for (const auto& candidate : final_results) {
+			if (candidate.is_circle) {
+				Mat mask = get_obj_by_label(valid_labels.labels, candidate.id);
+
+				int color = classify_candidate(mask, H, S, I);
+				if (color != 0) {
+					confirmed_lights++;
+					std::string label_text = get_color_name(color);
+					Point center((int)candidate.centroid.x, (int)candidate.centroid.y);
+
+					Scalar text_color;
+					if (color == 1) {
+						text_color = Scalar(0, 0, 255); // RED
+					}
+					else if (color == 2) {
+						text_color = Scalar(0, 255, 255); // YELLOW
+					}
+					else {
+						text_color = Scalar(0, 255, 0); // GREEN
+					}
+
+					putText(output_display, label_text, Point(center.x + 15, center.y + 5),
+						FONT_HERSHEY_SIMPLEX, 0.7, text_color, 2);
+				}
+			}
+		}
+
+		imshow("Colored labels", colored_labels);
+		imshow("Detected traffic light(s)", output_display);
+
+		waitKey(0);
+		destroyAllWindows();
+	}
+}
+
+// !!!!! FA ALGORITMUL PENTRU RECUNOASTERE SAGEATA INTERMITENT LA SEMAFOR
 
 
 
@@ -3077,8 +3140,10 @@ int main()
 		printf(" 40 - Traffic light detection - Step 2 (BGR to HSV conversion)\n");
 		printf(" 41 - HSI conversion\n");
 		printf(" 42 - Foreground map for traffic light detection\n");
-		printf(" 43 - Candidate regions for traffic light detection\n");
-		printf(" 44 - Test final sistem de detectie semafoare (Toate etapele)\n");
+		printf(" 43 - Apply morphological operations\n");
+		printf(" 44 - Candidate regions for traffic light detection\n");
+		printf(" 45 - Test candidate regions for traffic light detection (shape-based filtering)\n");
+		printf(" 46 - Test final sistem de detectie semafoare (Toate etapele)\n");
 		printf(" 0 - Exit\n\n");
 		printf("Option: ");
 		scanf("%d",&op);
@@ -3190,10 +3255,16 @@ int main()
 				test_foreground_map();
 				break;
 			case 43:
-				test_candidate_regions();
+				test_morphological_operations();
 				break;
 			case 44:
-				test_traffic_light_final_system();
+				test_candidate_regions();
+				break;
+			case 45:
+				test_traffic_light_shape_detection();
+				break;
+			case 46:
+				test_traffic_light_final_detection();
 				break;
 			default:
 				break;
