@@ -2891,10 +2891,22 @@ void test_traffic_light_shape_detection()
 
 		std::vector<TrafficLightCandidate> final_results = filter_by_shape(valid_labels);
 
+		Mat validated_shapes_only = Mat::zeros(colored_labels.size(), CV_8UC3);
+
 		int detected_shapes = 0;
 		for (const auto& candidate : final_results) {
 			if (candidate.is_circle) {
 				detected_shapes++;
+
+				Mat mask = get_obj_by_label(valid_labels.labels, candidate.id);
+				
+				for (int i = 0; i < colored_labels.rows; i++) {
+					for (int j = 0; j < colored_labels.cols; j++) {
+						if (mask.at<uchar>(i, j) == 255) {
+							validated_shapes_only.at<Vec3b>(i, j) = colored_labels.at<Vec3b>(i, j);
+						}
+					}
+				}
 
 				Point center((int)candidate.centroid.x, (int)candidate.centroid.y);
 				drawMarker(output_display, center, Scalar(255, 0, 255), MARKER_CROSS, 15, 2);
@@ -2903,6 +2915,7 @@ void test_traffic_light_shape_detection()
 		}
 
 		imshow("Colored labels", colored_labels);
+		imshow("Filtered valid shape(s)", validated_shapes_only);
 		imshow("Shape detection", output_display);
 
 		waitKey(0);
@@ -3007,6 +3020,7 @@ void test_traffic_light_final_detection()
 		Mat colored_labels = color_labels(valid_labels);
 
 		std::vector<TrafficLightCandidate> final_results = filter_by_shape(valid_labels);
+		Mat final_validated_lights = Mat::zeros(colored_labels.size(), CV_8UC3);
 
 		int confirmed_lights = 0;
 		for (const auto& candidate : final_results) {
@@ -3016,27 +3030,25 @@ void test_traffic_light_final_detection()
 				int color = classify_candidate(mask, H, S, I);
 				if (color != 0) {
 					confirmed_lights++;
+					for (int i = 0; i < colored_labels.rows; i++) {
+						for (int j = 0; j < colored_labels.cols; j++) {
+							if (mask.at<uchar>(i, j) == 255) {
+								final_validated_lights.at<Vec3b>(i, j) = colored_labels.at<Vec3b>(i, j);
+							}
+						}
+					}
+
 					std::string label_text = get_color_name(color);
 					Point center((int)candidate.centroid.x, (int)candidate.centroid.y);
 
-					Scalar text_color;
-					if (color == 1) {
-						text_color = Scalar(0, 0, 255); // RED
-					}
-					else if (color == 2) {
-						text_color = Scalar(0, 255, 255); // YELLOW
-					}
-					else {
-						text_color = Scalar(0, 255, 0); // GREEN
-					}
-
 					putText(output_display, label_text, Point(center.x + 15, center.y + 5),
-						FONT_HERSHEY_SIMPLEX, 0.7, text_color, 2);
+						FONT_HERSHEY_SIMPLEX, 0.7, Scalar(255, 255, 255), 2);
 				}
 			}
 		}
 
 		imshow("Colored labels", colored_labels);
+		imshow("Final validated light(s)", final_validated_lights);
 		imshow("Detected traffic light(s)", output_display);
 
 		waitKey(0);
@@ -3139,11 +3151,11 @@ int main()
 		printf(" 39 - Traffic light detection - Step 1 (Gaussian Blur)\n");
 		printf(" 40 - Traffic light detection - Step 2 (BGR to HSV conversion)\n");
 		printf(" 41 - HSI conversion\n");
-		printf(" 42 - Foreground map for traffic light detection\n");
+		printf(" 42 - Binary foreground map for traffic light detection\n");
 		printf(" 43 - Apply morphological operations\n");
-		printf(" 44 - Candidate regions for traffic light detection\n");
-		printf(" 45 - Test candidate regions for traffic light detection (shape-based filtering)\n");
-		printf(" 46 - Test final sistem de detectie semafoare (Toate etapele)\n");
+		printf(" 44 - Labeled candidate regions for traffic light detection\n");
+		printf(" 45 - Candidate regions for traffic light detection (shape-based filtering)\n");
+		printf(" 46 - Final traffic light detection\n");
 		printf(" 0 - Exit\n\n");
 		printf("Option: ");
 		scanf("%d",&op);
