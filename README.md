@@ -149,21 +149,21 @@ The system yields high accuracy for circular traffic lights captured from a rela
 * **Arrow Fragmentation**: Sunlit foliage or background architecture can merge with the arrow mask during binarization, disrupting the projection profiles and causing misclassification.
 
 <div align="center">
-<img alt="image" src="https://github.com/user-attachments/assets/574e6c4f-8d08-4a2f-95a8-73ac9ccf7173" />
+<img alt="image" src="https://github.com/user-attachments/assets/574e6c4f-8d08-4a2f-95a8-73ac9ccf7173" /><br>
 Due to the viewing angle of the traffic light, the algorithm failed to detect it.
 </div>
 
 <br><br>
 
 <div align="center">
-<img alt="image" src="https://github.com/user-attachments/assets/dfa81056-1bb9-4370-94a7-9145c561cccf" />
+<img alt="image" src="https://github.com/user-attachments/assets/dfa81056-1bb9-4370-94a7-9145c561cccf" /><br>
 The same situation here, the 3rd traffic light is not identified.
 </div>
 
 <br><br>
 
 <div align="center">
-<img alt="image" src="https://github.com/user-attachments/assets/48f8c432-16f9-4d39-bc7c-1b3d92018587" />
+<img alt="image" src="https://github.com/user-attachments/assets/48f8c432-16f9-4d39-bc7c-1b3d92018587" /><br>
 Here, the red billboard is incorrectly identified as a traffic light due to its similar shape and color.
 </div>
 
@@ -171,7 +171,7 @@ Here, the red billboard is incorrectly identified as a traffic light due to its 
 
 <div align="center">
 <img alt="image" src="https://github.com/user-attachments/assets/8788b057-1d01-4501-a055-5dfc551e0b36" /><br><br>
-<img alt="image" src="https://github.com/user-attachments/assets/bd2b5579-1fe2-4791-b253-4dcb46e886de" />
+<img alt="image" src="https://github.com/user-attachments/assets/bd2b5579-1fe2-4791-b253-4dcb46e886de" /><br>
 False detections of directional traffic lights
 </div>
 
