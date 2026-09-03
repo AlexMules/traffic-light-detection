@@ -141,9 +141,9 @@ Upon execution, a console menu is displayed. Enter the corresponding number to t
 
 Select an option, and a File Explorer dialog will prompt you to select an input image.
 
-<br><br>
+<br>
 
-## Results & Limitations
+## 📊 Results & Limitations
 The system yields high accuracy for circular traffic lights captured from a relatively frontal perspective with clear illumination. However, relying strictly on classical image processing methods exposes the system to real-world variables:
 * **Perspective Distortions (False Negatives)**: Severe viewing angles compress circles into ellipses. This causes the shape to fail the 45% circularity tolerance test.
 * **Background Interference (False Positives)**: Urban elements (e.g., red billboards, circular tail lights) that share chromatic and geometric properties with traffic lights can bypass the filters.
