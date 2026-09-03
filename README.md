@@ -15,7 +15,7 @@ The pipeline avoids deep learning for the core classification, relying instead o
 
 <br>
 
-## System Architecture & Pipeline
+## 🏗️ System Architecture & Pipeline
 
 The recognition system operates in two main phases: **Detection** (isolating regions of interest) and **Classification** (validating shapes and colors). 
 
