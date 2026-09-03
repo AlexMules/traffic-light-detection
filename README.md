@@ -134,6 +134,7 @@ Once a shape is validated, the algorithm re-evaluates the pixel density strictly
 
 ### Execution
 Upon execution, a console menu is displayed. Enter the corresponding number to test specific pipeline stages:
+0. Exit
 1. HSI conversion
 2. Binary foreground map
 3. Apply morphological operations
@@ -142,7 +143,6 @@ Upon execution, a console menu is displayed. Enter the corresponding number to t
 6. Final traffic light detection
 7. Test traffic light arrow detection (Quadrant Method)
 8. Test traffic light arrow detection (Projections Method)
-0. Exit
 
 Select an option, and a File Explorer dialog will prompt you to select an input image.
 
