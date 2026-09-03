@@ -4,6 +4,10 @@ This project is an automatic image processing pipeline developed in C++ and Open
 
 The pipeline avoids deep learning for the core classification, relying instead on a robust, analytical approach using color space transformations, morphological filtering, and geometric spatial analysis.
 
+<div align="center">
+ <img alt="image" src="https://github.com/user-attachments/assets/303111a6-f135-4e8f-8dfc-20905b85af9d" />
+</div>
+
 <br>
 
 ## 📌 Table of Contents
