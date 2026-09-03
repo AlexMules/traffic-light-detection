@@ -119,4 +119,27 @@ Once a shape is validated, the algorithm re-evaluates the pixel density strictly
 ### Build Instructions
 1. Clone the repository:
    ```bash
-   git clone 
+   git clone https://github.com/AlexMules/traffic-light-detection.git
+   ```
+
+2. Open the **`OpenCVApplication.sln`** solution in Visual Studio.
+3. Ensure your **`OPENCV_DIR`** environment variable is correctly set.
+4. Verify the Linker settings point to **`opencv_world4xx.lib`**.
+5. Build and Run (F5).
+
+<br>
+
+### Execution
+Upon execution, a console menu is displayed. Enter the corresponding number to test specific pipeline stages:
+1. HSI conversion
+2. Binary foreground map
+3. Apply morphological operations
+4. Labeled candidate regions
+5. Shape-based filtering
+6. Final traffic light detection
+7. Test traffic light arrow detection (Quadrant Method)
+8. Test traffic light arrow detection (Projections Method)
+0. Exit
+Select an option, and a File Explorer dialog will prompt you to select an input image.
+
+<br><br>
