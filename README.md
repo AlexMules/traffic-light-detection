@@ -127,8 +127,6 @@ Once a shape is validated, the algorithm re-evaluates the pixel density strictly
 4. Verify the Linker settings point to **`opencv_world4xx.lib`**.
 5. Build and Run (F5).
 
-<br>
-
 ### Execution
 Upon execution, a console menu is displayed. Enter the corresponding number to test specific pipeline stages:
 1. HSI conversion
@@ -143,3 +141,37 @@ Upon execution, a console menu is displayed. Enter the corresponding number to t
 Select an option, and a File Explorer dialog will prompt you to select an input image.
 
 <br><br>
+
+## Results & Limitations
+The system yields high accuracy for circular traffic lights captured from a relatively frontal perspective with clear illumination. However, relying strictly on classical image processing methods exposes the system to real-world variables:
+* **Perspective Distortions (False Negatives)**: Severe viewing angles compress circles into ellipses. This causes the shape to fail the 45% circularity tolerance test.
+* **Background Interference (False Positives)**: Urban elements (e.g., red billboards, circular tail lights) that share chromatic and geometric properties with traffic lights can bypass the filters.
+* **Arrow Fragmentation**: Sunlit foliage or background architecture can merge with the arrow mask during binarization, disrupting the projection profiles and causing misclassification.
+
+<div align="center">
+<img alt="image" src="https://github.com/user-attachments/assets/574e6c4f-8d08-4a2f-95a8-73ac9ccf7173" />
+Due to the viewing angle of the traffic light, the algorithm failed to detect it.
+</div>
+
+<br><br>
+
+<div align="center">
+<img alt="image" src="https://github.com/user-attachments/assets/dfa81056-1bb9-4370-94a7-9145c561cccf" />
+The same situation here, the 3rd traffic light is not identified.
+</div>
+
+<br><br>
+
+<div align="center">
+<img alt="image" src="https://github.com/user-attachments/assets/48f8c432-16f9-4d39-bc7c-1b3d92018587" />
+Here, the red billboard is incorrectly identified as a traffic light due to its similar shape and color.
+</div>
+
+<br><br>
+
+<div align="center">
+<img alt="image" src="https://github.com/user-attachments/assets/8788b057-1d01-4501-a055-5dfc551e0b36" /><br><br>
+<img alt="image" src="https://github.com/user-attachments/assets/bd2b5579-1fe2-4791-b253-4dcb46e886de" />
+False detections of directional traffic lights
+</div>
+
