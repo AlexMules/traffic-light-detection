@@ -26,22 +26,41 @@ The recognition system operates in two main phases: **Detection** (isolating reg
 <br>
 
 ### 1. Pre-processing & Color Segmentation
-*   **BGR to HSI Conversion:** To build invariance against environmental illumination (shadows, glaring sun, nighttime), the image is converted from the BGR color space to HSI (Hue, Saturation, Intensity). This decouples pure color information from brightness.
-*   **Foreground Masking:** Strict mathematical thresholds are applied to the H, S, and I channels to isolate pixels matching active Red, Yellow, or Green lights.
+*   **BGR to HSI Conversion:** By converting the image into the HSI (Hue, Saturation, Intensity) color space, the algorithm isolates pure chromatic data from environmental illumination. This ensures a good performance across diverse lighting conditions, including glaring sunlight, nighttime, and deep shadows.
+<div align="center">
+<img alt="image" src="https://github.com/user-attachments/assets/0db66747-4a20-4d6d-8b08-d154e049653a" /><br><br>
+<img alt="image" src="https://github.com/user-attachments/assets/8dfddcab-d518-487e-a8f3-5485685a1106" /><br><br>
+<img alt="image" src="https://github.com/user-attachments/assets/d93a054c-6774-4dfc-8540-a005f0432131" />
+</div>
 
-> **📸 IMAGE PLACEHOLDER:** Insert an image showing the HSI conversion or color screening.
-> *Recomandare:* Decupează colajul cu ferestrele "Hue (H)", "Saturation (S)" și "Intensity (I)" de la pagina 11.
-> *Markdown:* `![HSI Conversion](docs/images/hsi_conversion.png)`
+<br>
+
+*   **Foreground Masking:** Strict mathematical thresholds are applied to the H, S, and I channels to isolate pixels matching active Red, Yellow, or Green lights.<br>
+<div align="center">
+<img alt="image" src="https://github.com/user-attachments/assets/37cb9af1-27a9-4ff3-81b3-c69d4e9e92ec" />
+</div>
+
+<br>
 
 ### 2. Morphological Filtering
 *   **Noise Cleaning:** A sequence of *Closing* (dilation followed by erosion) and *Opening* (erosion followed by dilation) operations is applied. 
 *   **Structural Merging:** By increasing the iteration count, the effective size of the structuring element is expanded. This successfully overcomes the mathematical idempotency of the operations, allowing the algorithm to physically "weld" separated LED clusters together while erasing isolated background noise.
+<div align="center">
+<img alt="image" src="https://github.com/user-attachments/assets/cb3c9ced-5b0d-45ab-a3c4-197d0a60aa69" />
+</div>
 
-### 3. Connected Component Labeling
+<br><br>
+
+### 3. Connected Component Labelling
 *   **Two-Pass Labeling:** The binary map is scanned to group connected pixels into distinct objects.
 *   **Spatial Filtering:** Objects with a pixel area below `MIN_AREA_THRESHOLD` (500 pixels for circles, 200 for arrows) are discarded as residual noise.
+<div align="center">
+<img alt="image" src="https://github.com/user-attachments/assets/f0580324-14d4-4d52-943b-870333ff1e96" /><br><br>
+<img alt="image" src="https://github.com/user-attachments/assets/78feb4f7-c1af-42fe-81e8-c1ba79b9fb46" />
 
----
+</div>
+
+<br><br>
 
 ## 🧠 Algorithmic Implementation Details
 
