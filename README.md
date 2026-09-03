@@ -198,5 +198,5 @@ False detections of directional traffic lights
 ## <a id="future"></a>🔭 Future Work
 To elevate the system to production-level reliability for autonomous driving, a hybrid approach is recommended.
 * **Deep Learning Integration**: Implement a YOLO-based object detection model (e.g., YOLOv12) to accurately locate the traffic light housing and establish a highly precise Region of Interest (ROI).
-* **Refined Validation**: Using the C++ geometric and projection-based algorithms from this repository exclusively within the YOLO-defined ROI. This eliminates background noise entirely and relies on the analytical pipeline only for exact color state and arrow direction extraction.
+* **Refined Validation**: Use the C++ geometric and projection-based algorithms from this repository exclusively within the YOLO-defined ROI. This eliminates background noise entirely and relies on the analytical pipeline only for exact color state and arrow direction extraction.
 
