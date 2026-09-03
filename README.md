@@ -11,7 +11,7 @@ The pipeline avoids deep learning for the core classification, relying instead o
 <br>
 
 ## 📌 Table of Contents
-1. [System Architecture & Pipeline](#-system-architecture--pipeline)
+1. [System Architecture & Pipeline](#architecture)
 2. [Algorithmic Implementation Details](#-algorithmic-implementation-details)
 3. [User Manual & Installation](#-user-manual--installation)
 4. [Results & Limitations](#-results--limitations)
@@ -19,7 +19,7 @@ The pipeline avoids deep learning for the core classification, relying instead o
 
 <br>
 
-## 🏗️ System Architecture & Pipeline
+## <a id="architecture"></a>🏗️ System Architecture & Pipeline
 
 The recognition system operates in two main phases: **Detection** (isolating regions of interest) and **Classification** (validating shapes and colors). 
 
