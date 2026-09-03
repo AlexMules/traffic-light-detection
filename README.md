@@ -119,4 +119,4 @@ Once a shape is validated, the algorithm re-evaluates the pixel density strictly
 ### Build Instructions
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/AlexMules/traffic-light-detection.git](https://github.com/AlexMules/traffic-light-detection.git)
+   git clone 
