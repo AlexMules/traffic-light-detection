@@ -12,10 +12,11 @@ The pipeline avoids deep learning for the core classification, relying instead o
 
 ## 📌 Table of Contents
 1. [System Architecture & Pipeline](#architecture)
-2. [Algorithmic Implementation Details](#-algorithmic-implementation-details)
-3. [User Manual & Installation](#-user-manual--installation)
-4. [Results & Limitations](#-results--limitations)
-5. [Future Work](#-future-work)
+2. [Algorithmic Implementation Details](#algorithms)
+3. [User Manual & Installation](#manual)
+4. [Results](#results)
+5. [Limitations](#limitations)
+6. [Future Work](#future)
 
 <br>
 
@@ -65,7 +66,7 @@ The recognition system operates in two main phases: **Detection** (isolating reg
 
 <br><br>
 
-## 🧠 Algorithmic Implementation Details
+## <a id="algorithms"></a>🧠 Algorithmic Implementation Details
 
 ### ⭕ Circular Traffic Light Validation
 To differentiate a standard traffic light from random background objects, the algorithm analyzes the geometry of each candidate region.
@@ -113,7 +114,7 @@ Once a shape is validated, the algorithm re-evaluates the pixel density strictly
 
 <br><br>
 
-## 🚀 User Manual & Installation
+## <a id="manual"></a>🚀 User Manual & Installation
 
 ### Prerequisites
 *   **OS:** Windows
@@ -147,8 +148,21 @@ Select an option, and a File Explorer dialog will prompt you to select an input 
 
 <br>
 
-## 📊 Results & Limitations
-The system yields high accuracy for circular traffic lights captured from a relatively frontal perspective with clear illumination. However, relying strictly on classical image processing methods exposes the system to real-world variables:
+## <a id="results"></a>📊 Results
+The system yields high accuracy for circular traffic lights and directional arrows captured from a relatively frontal perspective with clear illumination.
+
+<div align="center">
+ <img alt="image" src="https://github.com/user-attachments/assets/1dd08f14-0076-4458-8cbb-e02d3a7ffbe5" /><br><br>
+ <img alt="image" src="https://github.com/user-attachments/assets/43e753e5-9a37-43cb-bf04-f222ba111db5" /><br><br>
+<img alt="image" src="https://github.com/user-attachments/assets/6d648371-5d2f-4fcf-849a-36e6f5c93c03" /><br><br>
+<img alt="image" src="https://github.com/user-attachments/assets/2c14bd72-402a-471b-9282-e632bbd9f3ce" /><br><br>
+<img alt="image" src="https://github.com/user-attachments/assets/433e82e9-1ea9-4a77-a9e6-759909c39f52" /><br><br>
+</div>
+
+<br>
+
+## <a id="limitations"></a>⚠️ Limitations
+Relying strictly on classical image processing methods exposes the system to real-world variables:
 * **Perspective Distortions (False Negatives)**: Severe viewing angles compress circles into ellipses. This causes the shape to fail the 45% circularity tolerance test.
 * **Background Interference (False Positives)**: Urban elements (e.g., red billboards, circular tail lights) that share chromatic and geometric properties with traffic lights can bypass the filters.
 * **Arrow Fragmentation**: Sunlit foliage or background architecture can merge with the arrow mask during binarization, disrupting the projection profiles and causing misclassification.
