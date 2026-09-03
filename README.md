@@ -106,7 +106,7 @@ Arrows are structurally fragile and prone to fragmentation. The pipeline applies
 <br>
 
 ### 🎨 Color Classification
-Once a shape is validated, the algorithm re-evaluates the pixel density strictly inside the validated mask using highly restrictive HSI thresholds to prevent color overlapping. A majority rule is applied: the dominant color must cover $> 50\%$ of the candidate's area to be accepted.
+Once a shape is validated, the algorithm re-evaluates the pixel density strictly inside the validated mask using highly restrictive HSI thresholds to prevent color overlapping. A majority rule is applied: the dominant color must cover $> 50\%$ % of the candidate's area to be accepted.
 
 <div align="center">
 <img alt="image" src="https://github.com/user-attachments/assets/86d029eb-e11a-4038-b8e7-f3718950343d" />
