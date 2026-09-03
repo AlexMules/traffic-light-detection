@@ -134,7 +134,6 @@ Once a shape is validated, the algorithm re-evaluates the pixel density strictly
 
 ### Execution
 Upon execution, a console menu is displayed. Enter the corresponding number to test specific pipeline stages:
-0. Exit
 1. HSI conversion
 2. Binary foreground map
 3. Apply morphological operations
