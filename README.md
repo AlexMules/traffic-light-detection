@@ -7,11 +7,11 @@ The pipeline avoids deep learning for the core classification, relying instead o
 <br>
 
 ## 📌 Table of Contents
-1. [System Architecture & Pipeline](#system-architecture--pipeline)
-2. [Algorithmic Implementation Details](#algorithmic-implementation-details)
-3. [User Manual & Installation](#user-manual--installation)
-4. [Results & Limitations](#results--limitations)
-5. [Future Work](#future-work)
+1. [System Architecture & Pipeline](#-system-architecture--pipeline)
+2. [Algorithmic Implementation Details](#-algorithmic-implementation-details)
+3. [User Manual & Installation](#-user-manual--installation)
+4. [Results & Limitations](#-results--limitations)
+5. [Future Work](#-future-work)
 
 <br>
 
