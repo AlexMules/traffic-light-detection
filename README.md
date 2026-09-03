@@ -67,7 +67,7 @@ The recognition system operates in two main phases: **Detection** (isolating reg
 
 ## 🧠 Algorithmic Implementation Details
 
-### Circular Traffic Light Validation
+### ⭕ Circular Traffic Light Validation
 To differentiate a standard traffic light from random background objects, the algorithm analyzes the geometry of each candidate region.
 1.  **Compactness:** Computes the bounding box and aspect ratio. The object must have a width-to-height ratio between `0.5` and `1.8`.
 2.  **Centroid Calculation:** Extracts the outer boundary points and computes the geometric centroid (center of mass).
@@ -80,7 +80,7 @@ To differentiate a standard traffic light from random background objects, the al
 
 <br><br>
 
-### Directional Arrow Detection (2 Methods)
+### ➡️ Directional Arrow Detection (2 Methods)
 Arrows are structurally fragile and prone to fragmentation. The pipeline applies a heavy *Closing* operation (5 iterations) specifically for arrow candidates to prevent the "tail" from detaching from the "tip". The direction is then evaluated using one of two implemented methods:
 
 #### Method A: Spatial Distribution (Quadrants)
@@ -104,7 +104,7 @@ Arrows are structurally fragile and prone to fragmentation. The pipeline applies
 
 <br>
 
-### Color Classification
+### 🎨 Color Classification
 Once a shape is validated, the algorithm re-evaluates the pixel density strictly inside the validated mask using highly restrictive HSI thresholds to prevent color overlapping. A majority rule is applied: the dominant color must cover $> 50\%$ of the candidate's area to be accepted.
 
 <div align="center">
