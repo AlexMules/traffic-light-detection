@@ -57,7 +57,6 @@ The recognition system operates in two main phases: **Detection** (isolating reg
 <div align="center">
 <img alt="image" src="https://github.com/user-attachments/assets/f0580324-14d4-4d52-943b-870333ff1e96" /><br><br>
 <img alt="image" src="https://github.com/user-attachments/assets/78feb4f7-c1af-42fe-81e8-c1ba79b9fb46" />
-
 </div>
 
 <br><br>
@@ -69,12 +68,15 @@ To differentiate a standard traffic light from random background objects, the al
 1.  **Compactness:** Computes the bounding box and aspect ratio. The object must have a width-to-height ratio between `0.5` and `1.8`.
 2.  **Centroid Calculation:** Extracts the outer boundary points and computes the geometric centroid (center of mass).
 3.  **Circularity Variance:** Calculates the Euclidean distance from the centroid to all outer border points to find $r_{min}$ and $r_{max}$. If the shape variance ratio $(r_{max} - r_{min}) / r_{max}$ is $\le 0.45$, the object is validated as a circle.
+ 
+<div align="center">
+<img alt="image" src="https://github.com/user-attachments/assets/89ed81d0-83f2-463e-985b-1965f2f08f3f" /><br><br>
+<img alt="image" src="https://github.com/user-attachments/assets/8cc16a37-fe69-45e0-b2c3-cc6901fe7593" />
+</div>
 
-> **📸 IMAGE PLACEHOLDER:** Insert the shape validation visualization.
-> *Recomandare:* Folosește imaginea de la pagina 17 unde apar ferestrele "Filtered valid shape(s)" alături de semaforul pe care sunt desenate cercurile verzi și crucile pe centru.
-> *Markdown:* `![Shape Validation](docs/images/shape_validation.png)`
+<br><br>
 
-### Directional Arrow Detection (Two Methods)
+### Directional Arrow Detection (2 Methods)
 Arrows are structurally fragile and prone to fragmentation. The pipeline applies a heavy *Closing* operation (5 iterations) specifically for arrow candidates to prevent the "tail" from detaching from the "tip". The direction is then evaluated using one of two implemented methods:
 
 #### Method A: Spatial Distribution (Quadrants)
@@ -82,18 +84,31 @@ Arrows are structurally fragile and prone to fragmentation. The pipeline applies
 *   The algorithm computes the *Fill Ratio* (must be between 0.35 and 0.72) and evaluates horizontal/vertical symmetry.
 *   The direction is assigned to the quadrant containing the highest pixel density.
 
-#### Method B: 1D Projections (Histogram Tip Analysis)
-*   Instead of static quadrants, this method generates 1D histograms (horizontal and vertical projections) by summing the white pixels along the axes.
+<div align="center">
+<img alt="image" src="https://github.com/user-attachments/assets/4b9a743c-7054-49b9-9c2a-08d3c26d99b5" />
+</div>
+
+<br>
+
+#### Method B: Projections (Histogram Tip Analysis)
+*   Instead of static quadrants, this method generates histograms (horizontal and vertical projections) by summing the white pixels along the axes.
 *   **Tip Analysis:** The algorithm isolates the first 20% and the last 20% of the shape's length. Because an arrow's tip concentrates significantly more mass than its tail, the algorithm compares these extremities. If the density of one end exceeds the other by a safety factor of `1.1x`, the direction is validated.
 
-> **📸 IMAGE PLACEHOLDER:** Insert the arrow detection visualization.
-> *Recomandare:* Folosește imaginea cu săgeata verde înspre sus ("GREEN ARROW UP") alături de forma sa extrasă (mov) de la pagina 21 sau 23.
-> *Markdown:* `![Arrow Detection](docs/images/arrow_detection.png)`
+<div align="center">
+<img alt="image" src="https://github.com/user-attachments/assets/2304fccd-db1a-40df-8e7a-68c275cb1677" />
+</div>
+
+<br><br>
 
 ### Color Classification
 Once a shape is validated, the algorithm re-evaluates the pixel density strictly inside the validated mask using highly restrictive HSI thresholds to prevent color overlapping. A majority rule is applied: the dominant color must cover $> 50\%$ of the candidate's area to be accepted.
 
----
+<div align="center">
+<img alt="image" src="https://github.com/user-attachments/assets/86d029eb-e11a-4038-b8e7-f3718950343d" />
+</div>
+
+
+<br><br>
 
 ## 🚀 User Manual & Installation
 
