@@ -138,6 +138,7 @@ Upon execution, a console menu is displayed. Enter the corresponding number to t
 7. Test traffic light arrow detection (Quadrant Method)
 8. Test traffic light arrow detection (Projections Method)
 0. Exit
+
 Select an option, and a File Explorer dialog will prompt you to select an input image.
 
 <br><br>
